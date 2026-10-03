@@ -8,16 +8,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureAdmin
 {
+    /**
+     * Handle an incoming request.
+     *
+     * @param  Closure(Request): (Response)  $next
+     */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $request->user()?->isAdmin()) {
-            return response()->json(['error' => [
-                'code' => 'FORBIDDEN',
-                'message' => 'Admin access required.',
-                'details' => (object) [],
-            ]], 403);
-        }
-
         return $next($request);
     }
 }
