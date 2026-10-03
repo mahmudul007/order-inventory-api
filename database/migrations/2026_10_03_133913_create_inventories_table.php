@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -13,8 +14,36 @@ return new class extends Migration
     {
         Schema::create('inventories', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('product_id')->unique()->constrained()->cascadeOnDelete();
+            $table->unsignedInteger('quantity_on_hand')->default(0);
+            $table->unsignedInteger('quantity_reserved')->default(0);
+            $table->unsignedInteger('version')->default(0);
             $table->timestamps();
         });
+
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            DB::statement('
+                CREATE TRIGGER chk_inv_reserved_lte_on_hand_insert
+                BEFORE INSERT ON inventories
+                FOR EACH ROW
+                WHEN NEW.quantity_reserved > NEW.quantity_on_hand
+                BEGIN
+                    SELECT RAISE(ABORT, "CHECK constraint failed: quantity_reserved <= quantity_on_hand");
+                END;
+            ');
+
+            DB::statement('
+                CREATE TRIGGER chk_inv_reserved_lte_on_hand_update
+                BEFORE UPDATE ON inventories
+                FOR EACH ROW
+                WHEN NEW.quantity_reserved > NEW.quantity_on_hand
+                BEGIN
+                    SELECT RAISE(ABORT, "CHECK constraint failed: quantity_reserved <= quantity_on_hand");
+                END;
+            ');
+        } else {
+            DB::statement('ALTER TABLE inventories ADD CONSTRAINT chk_inv_reserved_lte_on_hand CHECK (quantity_reserved <= quantity_on_hand)');
+        }
     }
 
     /**
