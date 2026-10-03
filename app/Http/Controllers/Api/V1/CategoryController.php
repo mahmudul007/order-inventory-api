@@ -3,48 +3,56 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\CategoryRequest;
+use App\Http\Resources\CategoryResource;
 use App\Models\Category;
-use Illuminate\Http\Request;
+use App\Repositories\ProductRepository;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function __construct(private ProductRepository $products) {}
+
+    public function index(): AnonymousResourceCollection
     {
-        //
+        return CategoryResource::collection($this->products->categoryTree());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(CategoryRequest $request): JsonResponse
     {
-        //
+        $category = Category::create($request->validated());
+        $this->products->invalidateCategories();
+
+        return (new CategoryResource($category))->response()->setStatusCode(201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Category $category)
+    public function show(Category $category): CategoryResource
     {
-        //
+        return new CategoryResource($category->load('children'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Category $category)
+    public function update(CategoryRequest $request, Category $category): CategoryResource
     {
-        //
+        $category->update($request->validated());
+        $this->products->invalidateCategories();
+
+        return new CategoryResource($category);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Category $category)
+    public function destroy(Category $category): JsonResponse
     {
-        //
+        if ($category->products()->withTrashed()->exists()) {
+            return response()->json(['error' => [
+                'code' => 'CATEGORY_IN_USE',
+                'message' => 'Category still has products.',
+                'details' => (object) [],
+            ]], 409);
+        }
+
+        $category->delete();
+        $this->products->invalidateCategories();
+
+        return response()->json(null, 204);
     }
 }

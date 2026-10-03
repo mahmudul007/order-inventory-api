@@ -3,48 +3,41 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CustomerResource;
+use App\Http\Resources\OrderResource;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class CustomerController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request): AnonymousResourceCollection
     {
-        //
+        $customers = Customer::query()
+            ->withCount('orders')
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $term = '%'.$request->string('search').'%';
+                $q->where(fn ($w) => $w->where('name', 'like', $term)->orWhere('email', 'like', $term));
+            })
+            ->orderBy('id')
+            ->paginate($this->perPage($request));
+
+        return CustomerResource::collection($customers);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function show(Customer $customer): CustomerResource
     {
-        //
+        return new CustomerResource($customer->loadCount('orders'));
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Customer $customer)
+    public function orders(Request $request, Customer $customer): AnonymousResourceCollection
     {
-        //
-    }
+        $orders = $customer->orders()
+            ->with(['customer', 'items.product'])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->cursorPaginate($this->perPage($request));
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Customer $customer)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Customer $customer)
-    {
-        //
+        return OrderResource::collection($orders);
     }
 }

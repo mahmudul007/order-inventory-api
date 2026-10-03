@@ -13,17 +13,21 @@ class AdjustInventoryRequest extends FormRequest
     public function authorize(): bool
     {
         return false;
+        return true;
     }
 
     /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array<string, mixed>
      */
     public function rules(): array
     {
         return [
             //
+            'delta' => ['required', 'integer', 'not_in:0', 'between:-100000,100000'],
+            'note' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api\V1;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreOrderRequest extends FormRequest
 {
@@ -13,17 +14,25 @@ class StoreOrderRequest extends FormRequest
     public function authorize(): bool
     {
         return false;
+        return true;
     }
 
     /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array<string, mixed>
      */
     public function rules(): array
     {
         return [
             //
+            'items' => ['required', 'array', 'min:1', 'max:50'],
+            'items.*.product_id' => [
+                'required', 'integer', 'distinct',
+                Rule::exists('products', 'id')->where('is_active', true)->whereNull('deleted_at'),
+            ],
+            'items.*.quantity' => ['required', 'integer', 'min:1', 'max:1000'],
         ];
     }
 }
