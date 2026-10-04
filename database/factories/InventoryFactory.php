@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Inventory;
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,6 +20,10 @@ class InventoryFactory extends Factory
     {
         return [
             //
+            'product_id' => Product::factory(),
+            'quantity_on_hand' => 100,
+            'quantity_reserved' => 0,
+            'version' => 0,
         ];
     }
 }

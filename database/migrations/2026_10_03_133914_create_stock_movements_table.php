@@ -13,7 +13,14 @@ return new class extends Migration
     {
         Schema::create('stock_movements', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->string('type', 20);
+            $table->integer('quantity'); // signed delta
+            $table->nullableMorphs('reference');
+            $table->string('note')->nullable();
+            $table->timestamp('created_at')->useCurrent();
+
+            $table->index(['product_id', 'created_at']);
         });
     }
 

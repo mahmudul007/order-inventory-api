@@ -17,18 +17,12 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class IdempotencyMiddleware
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  Closure(Request): (Response)  $next
-     */
     private const TTL_HOURS = 24;
 
     private const LOCK_SECONDS = 30;
 
     public function handle(Request $request, Closure $next): Response
     {
-        return $next($request);
         $key = $request->header('Idempotency-Key');
 
         if (! is_string($key) || $key === '' || strlen($key) > 64) {

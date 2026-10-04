@@ -31,12 +31,11 @@ class ProductFactory extends Factory
 
     public function withStock(int $qty = 100): static
     {
-        return $this->afterCreating(fn (Product $p) =>
-            Inventory::create([
-                'product_id' => $p->id,
-                'quantity_on_hand' => $qty,
-                'quantity_reserved' => 0,
-            ])
+        return $this->afterCreating(fn (Product $p) => Inventory::create([
+            'product_id' => $p->id,
+            'quantity_on_hand' => $qty,
+            'quantity_reserved' => 0,
+        ])
         );
     }
 }

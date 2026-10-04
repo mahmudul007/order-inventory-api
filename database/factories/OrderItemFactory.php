@@ -20,6 +20,7 @@ class OrderItemFactory extends Factory
     public function definition(): array
     {
         return [
+            //
             'order_id' => Order::factory(),
             'product_id' => Product::factory(),
             'quantity' => 1,

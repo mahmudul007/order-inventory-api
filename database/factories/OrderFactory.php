@@ -21,6 +21,7 @@ class OrderFactory extends Factory
     public function definition(): array
     {
         return [
+            //
             'customer_id' => Customer::factory(),
             'idempotency_key' => (string) Str::uuid(),
             'status' => OrderStatus::Pending,
