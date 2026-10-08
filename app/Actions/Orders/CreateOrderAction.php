@@ -4,6 +4,7 @@ namespace App\Actions\Orders;
 
 use App\Contracts\InventoryServiceInterface;
 use App\Enums\OrderStatus;
+use App\Events\OrderPlaced;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
@@ -65,6 +66,8 @@ class CreateOrderAction
 
                 return $order;
             }, 3);
+
+            OrderPlaced::dispatch($order);
         } catch (UniqueConstraintViolationException) {
             /** A concurrent request with the same key won the race; return its order. */
             $order = Order::query()->where('idempotency_key', $idempotencyKey)->firstOrFail();

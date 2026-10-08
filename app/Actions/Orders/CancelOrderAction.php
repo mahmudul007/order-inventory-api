@@ -4,6 +4,7 @@ namespace App\Actions\Orders;
 
 use App\Contracts\InventoryServiceInterface;
 use App\Enums\OrderStatus;
+use App\Events\OrderCancelled;
 use App\Exceptions\InvalidOrderTransitionException;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
@@ -38,6 +39,8 @@ class CancelOrderAction
 
             return $locked;
         }, 3);
+
+        OrderCancelled::dispatch($order);
 
         return $order->load(['items.product', 'customer']);
     }
