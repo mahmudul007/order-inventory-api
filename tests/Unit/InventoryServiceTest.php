@@ -21,7 +21,7 @@ class InventoryServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new InventoryService();
+        $this->service = new InventoryService;
     }
 
     public function test_reserves_stock_successfully(): void

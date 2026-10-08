@@ -21,7 +21,9 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        DB::statement('ALTER TABLE inventories ADD CONSTRAINT chk_inv_reserved_lte_on_hand CHECK (quantity_reserved <= quantity_on_hand)');
+        if (DB::connection()->getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE inventories ADD CONSTRAINT chk_inv_reserved_lte_on_hand CHECK (quantity_reserved <= quantity_on_hand)');
+        }
     }
 
     /**

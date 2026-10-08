@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Customer;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -42,7 +43,7 @@ class IdempotencyTest extends TestCase
             ->assertJsonPath('data.id', $firstOrderId);
 
         // Ensure only one order was created in DB
-        $this->assertEquals(1, \App\Models\Order::where('idempotency_key', $key)->count());
+        $this->assertEquals(1, Order::where('idempotency_key', $key)->count());
     }
 
     public function test_reusing_key_with_different_payload_returns_422(): void
